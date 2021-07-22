@@ -16,6 +16,7 @@ export function Home() {
   const history = useHistory();
   const { user, signInWithGoogle } = useAuth();
   const [roomCode, setRoomCode] = useState('');
+  const [roomName, setRoomName] = useState('');
 
   async function handleCreateRoom(){
     if(!user){
@@ -27,7 +28,6 @@ export function Home() {
 
   async function handleJoinRoom(event: FormEvent){
     event.preventDefault();
-
 
     if (roomCode.trim() === "")
       return;
@@ -44,10 +44,34 @@ export function Home() {
       alert("Sala já encerrada.");
       return;
     }
-
       history.push(`/rooms/${roomCode}`);
+  };
+
+  async function handleJoinRoomWithName(event: FormEvent){
+    event.preventDefault();
+
+    if (roomName.trim() === "")
+      return;
+
+      database.ref('rooms').orderByChild("name").equalTo("Raja Tamil").on("child_added", (snap) => {
+        console.log(snap.val());
+    });
+      
+      const roomRef = await database.ref(`rooms/${roomCode}`).get();
 
 
+
+      if(!roomRef.exists()){
+        alert('Sala não existente.');
+        return;
+      }
+
+
+    if(roomRef.val().endedAt){
+      alert("Sala já encerrada.");
+      return;
+    }
+      history.push(`/rooms/${roomCode}`);
   };
 
   return (
@@ -67,10 +91,16 @@ export function Home() {
             <img src={googleImg} alt="Logo do google" />
             Crie sua sala com o google
           </button>
-          <div className="separator">ou entre em uma sala</div>
+          <div className="separator">ou entre em uma sala com o código</div>
           <form onSubmit={handleJoinRoom}>
-            <input type="text" placeholder="Digite o código da sala"
+            <input type="text" placeholder="Digite o nome da sala"
             onChange={event => setRoomCode(event.target.value)} value={roomCode}></input>
+            <Button type="submit">Entrar na sala</Button>
+          </form>
+          <div className="separator">ou entre em uma sala com o nome</div>
+          <form onSubmit={handleJoinRoomWithName}>
+            <input type="text" placeholder="Digite o código da sala"
+            onChange={event => setRoomName(event.target.value)} value={roomName}></input>
             <Button type="submit">Entrar na sala</Button>
           </form>
         </div>
